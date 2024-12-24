@@ -1,14 +1,15 @@
-import React, { Component, useState } from "react";
+import React, {  useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Logo from "../assets/Logo.avif";
 import { ToastContainer, toast } from "react-toastify";
-import axios from 'axios'
+import axios from "axios";
+import { registerRoute, validuserName } from "../utils/APIRoutes";
 
 function Register() {
   const navigate = useNavigate();
   const toastOption = {
-    position: "bottom-center",
+    position: "bottom-right",
     autoClose: 3000,
     pauseOnHover: true,
     theme: "dark",
@@ -21,16 +22,105 @@ function Register() {
     userName: "",
     phoneNumber: "",
     password: "",
+    confirmPassword: "",
   });
-  
+
+  const checkuserName = async (userName) => {
+    if (userName.length > 3) {
+      try {
+        const response = await axios.get(`${validuserName}/${userName}`);
+        
+        if (response.data.exists) {
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.error("Error checking userName:", err);
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+   try{
+    if(await handleValidation())
+      {
+        const { name, email, userName, phoneNumber, password } = values;
+        const { data } = await axios.post(registerRoute,{
+          name, email, userName, phoneNumber, password
+        })  
+        console.log(data)
+        if (data.created === true) {
+          localStorage.setItem("jwtToken", data.token);
+          navigate("/");
+        } else {
+          toast.error(data.message, toastOption);
+        }
+
+      }
+   }
+   catch(err){
+    console.log(err);
+   }
+
   };
 
-  const handleChange = (e)=>{
-    setValues({...values,[e.target.name]:e.target.value})
-  }
+  const validatePhoneNumber = (number) => {
+    const phoneRegex = /^\+?[1-9]\d{9,14}$/;
+    return phoneRegex.test(number);
+  };
+
+
+  const handleValidation = async() => {
+    const { name, email, userName, phoneNumber, password, confirmPassword } =
+      values;
+    if (name === "") {
+      toast.error("Name can not be empty", toastOption);
+      return false;
+    } else if (email === "") {
+      toast.error("Email can not be empty", toastOption);
+      return false;
+    } else if (userName === "") {
+      toast.error("userName can not be empty", toastOption);
+      return false;
+    } 
+    else if (userName.length < 3) {
+      toast.error("userName should be greater than 3 characters", toastOption);
+      return false;
+    }else if (phoneNumber === "") {
+      toast.error("Phone Number can not be empty", toastOption);
+      return false;
+    } else if (!validatePhoneNumber(phoneNumber)) {
+      toast.error("Phone Number is invalid", toastOption);
+      return false;
+    } else if (password === "") {
+      toast.error("Password can not be empty", toastOption);
+      return false;
+    } else if (password.length < 8) {
+      toast.error(
+        "Password should be equal or greater than 8 characters",
+        toastOption
+      );
+      return false;
+    } else if (confirmPassword === "") {
+      toast.error("Confirm Password should be same as Password", toastOption);
+      return false;
+    } else if (password !== confirmPassword) {
+      toast.error("Confirm Password should be same as Password", toastOption);
+      return false;
+    }
+    else if (await checkuserName(userName)) {
+     
+      toast.error("userName already exists", toastOption);
+      return false;
+    }
+    return true;
+  };
+
+  const handleChange = async (e) => {
+    setValues({ ...values, [e.target.name]: e.target.value });
+    
+  };
 
   return (
     <Container>
@@ -42,27 +132,57 @@ function Register() {
         <div className="registerForm">
           <div className="inputFields">
             <label htmlFor="name"> Name </label>
-            <input type="text" name="name" placeholder="Name" onChange={(e)=> handleChange(e)} />
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              onChange={(e) => handleChange(e)}
+            />
           </div>
           <div className="inputFields">
             <label htmlFor="email"> Email </label>
-            <input type="email" name="email" placeholder="Email" onChange={(e)=> handleChange(e)} />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              onChange={(e) => handleChange(e)}
+            />
           </div>
           <div className="inputFields">
-            <label htmlFor="userName"> Username </label>
-            <input type="text" name="userName" placeholder="Username" onChange={(e)=> handleChange(e)}  />
+            <label htmlFor="userName"> userName </label>
+            <input
+              type="text"
+              name="userName"
+              placeholder="userName"
+              onChange={(e) => handleChange(e)}
+            />
           </div>
           <div className="inputFields">
             <label htmlFor="phoneNumber"> Phone Number </label>
-            <input type="tel" name="phoneNumber" placeholder="Phone Number" onChange={(e)=> handleChange(e)} />
+            <input
+              type="tel"
+              name="phoneNumber"
+              placeholder="Phone Number"
+              onChange={(e) => handleChange(e)}
+            />
           </div>
           <div className="inputFields">
             <label htmlFor="password"> Password </label>
-            <input type="password" name="password" placeholder="Password" onChange={(e)=> handleChange(e)} />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              onChange={(e) => handleChange(e)}
+            />
           </div>
           <div className="inputFields">
             <label htmlFor="confirmPassword"> Confirm Password </label>
-            <input type="password" name="confirmPassword" placeholder="Confirm Password" onChange={(e)=> handleChange(e)} />
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              onChange={(e) => handleChange(e)}
+            />
           </div>
           <button type="submit"> Register </button>
           <span>
@@ -76,6 +196,7 @@ function Register() {
           </span>
         </div>
       </form>
+
       <ToastContainer />
     </Container>
   );

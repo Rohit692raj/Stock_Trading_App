@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt')
 
 const userSchema = new mongoose.Schema({
-    fullName: {
+    name: {
         type: String,
         required: [true, 'Full name is required'],
         trim: true
@@ -13,11 +14,11 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address']
     },
-    username: {
+    userName: {
         type: String,
-        required: [true, 'Username is required'],
+        required: [true, 'userName is required'],
         unique: true,
-        minlength: [4, 'Username must be at least 4 characters long'],
+        minlength: [4, 'userName must be at least 4 characters long'],
         trim: true
     },
     password: {
@@ -33,6 +34,10 @@ const userSchema = new mongoose.Schema({
     profilePicture: {
         type: String,
         default: null
+    },
+    googleId: {
+        type: String
+       
     },
     accountBalance: {
         type: Number,
@@ -68,6 +73,13 @@ const userSchema = new mongoose.Schema({
         default: 'user'
     }
 }, { timestamps: true });
+
+userSchema.pre("save", async function (next) {
+    const salt = await bcrypt.genSalt();
+    this.password = await bcrypt.hash(this.password, salt)
+    next()
+    
+}) 
 
 const User = mongoose.model('User', userSchema);
 

@@ -7,7 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 function Login() {
 
     const[values,setValues] = useState({
-      username :"",
+      userName :"",
       password:""
     })
 
@@ -30,8 +30,8 @@ function Login() {
         <div className="LoginForm">
          
           <div className="inputFields">
-            <label htmlFor="userName"> Username </label>
-            <input type="text" name="userName" placeholder="Username" onChange={(e)=> handleChange(e)}  />
+            <label htmlFor="userName"> userName </label>
+            <input type="text" name="userName" placeholder="userName" onChange={(e)=> handleChange(e)}  />
           </div>
           
           <div className="inputFields">
